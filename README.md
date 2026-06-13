@@ -16,23 +16,45 @@ It is not yet a hardened remote-access product.
 
 ## Quick Start
 
+On the Mac, start WinBridge AI:
+
 ```bash
 npm start
 ```
 
-Open one of the printed pairing URLs from the Windows computer. The page
-provides copyable commands for:
+The Mac terminal prints one or more pairing URLs, for example:
+
+```text
+http://192.168.0.110:47832/?token=...
+```
+
+On the Windows computer:
+
+1. Open that printed URL in a Windows browser.
+2. Find the **LAN Agent** section.
+3. Click **Copy Agent Command**.
+4. Paste it into Windows PowerShell and run it.
+5. Keep that PowerShell window open while the Mac controls Windows.
+
+That page also provides optional commands for:
 
 - starting the polling Windows agent without SSH;
 - optionally bootstrapping OpenSSH Server;
 - optionally installing a Windows build environment.
 
-Once the agent is connected, use the web console or CLI:
+Once the Windows agent says it is connected, return to the Mac. Use the web
+console that is already open in the browser, or use the CLI:
 
 ```bash
 npm run status
 npm run run -- "hostname; whoami"
 npm run screenshot
+```
+
+In other words, the normal flow is still:
+
+```text
+Mac starts server -> Windows browser opens Mac URL -> Windows copies/runs agent command -> Mac controls Windows
 ```
 
 ## Runtime Data
