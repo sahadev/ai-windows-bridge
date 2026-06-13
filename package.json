@@ -1,0 +1,21 @@
+{
+  "name": "winbridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A local-first bridge for operating Windows machines from Mac-side AI tools.",
+  "bin": {
+    "winbridge": "./bin/winbridge.mjs"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "status": "node bin/winbridge.mjs status",
+    "run": "node bin/winbridge.mjs run",
+    "screenshot": "node bin/winbridge.mjs screenshot",
+    "install-artifact": "node bin/winbridge.mjs install-artifact",
+    "check": "node --check server.mjs && node --check bin/winbridge.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

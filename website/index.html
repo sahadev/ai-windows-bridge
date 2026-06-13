@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WinBridge AI</title>
+  <meta name="description" content="Control Windows from your Mac-side AI with a local-first bridge." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="WinBridge AI home">
+      <span class="brand-mark"></span>
+      <span>WinBridge AI</span>
+    </a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#security">Security</a>
+      <a href="#start">Quick start</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Mac control plane. Windows execution surface.</p>
+        <h1>Control Windows from your Mac-side AI.</h1>
+        <p class="lede">
+          WinBridge AI connects a Windows PC to your Mac so agents can run commands,
+          capture screenshots, install artifacts, inspect logs, and drive verification
+          without installing an AI environment on Windows.
+        </p>
+        <div class="hero-actions" id="start">
+          <code>npm start</code>
+          <a class="button" href="../README.md">Read setup</a>
+        </div>
+      </div>
+
+      <div class="console" aria-label="WinBridge AI control preview">
+        <div class="console-top">
+          <span></span><span></span><span></span>
+          <strong>winbridge://control</strong>
+        </div>
+        <div class="console-grid">
+          <div>
+            <small>paired agent</small>
+            <b>DESKTOP-7Q9 / builder</b>
+          </div>
+          <div>
+            <small>last seen</small>
+            <b>2s ago</b>
+          </div>
+          <div>
+            <small>queued jobs</small>
+            <b>3</b>
+          </div>
+        </div>
+        <pre><span>$</span> winbridge run "pnpm build; cargo test"
+queued job 20260613-bridge-01
+
+<span>$</span> winbridge screenshot
+captured winbridge-screenshot-20260613.png
+
+<span>$</span> winbridge install-artifact
+installing latest NSIS package...</pre>
+      </div>
+    </section>
+
+    <section class="band" id="how">
+      <div class="section-heading">
+        <p class="eyebrow">How it works</p>
+        <h2>One bridge, two machines, no Windows-side AI setup.</h2>
+      </div>
+      <div class="steps">
+        <article>
+          <span>01</span>
+          <h3>Start on Mac</h3>
+          <p>Run the local server. It prints tokenized LAN pairing URLs and keeps all runtime state on your Mac.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Pair Windows</h3>
+          <p>Open the URL on Windows and run the generated PowerShell agent command. The agent polls the Mac.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Let AI operate</h3>
+          <p>Use the web console, CLI, and future MCP tools to run jobs, collect logs, inspect screenshots, and install builds.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="capabilities">
+      <div>
+        <h2>Built for real Windows work.</h2>
+        <p>
+          The first release focuses on the operations AI agents need when macOS is
+          the thinking environment and Windows is the execution target.
+        </p>
+      </div>
+      <ul>
+        <li>PowerShell command queueing</li>
+        <li>Progress logs and exit codes</li>
+        <li>Screenshot capture</li>
+        <li>Artifact serving and installer execution</li>
+        <li>Optional OpenSSH bootstrap</li>
+        <li>CLI-first automation surface</li>
+      </ul>
+    </section>
+
+    <section class="security" id="security">
+      <div class="section-heading">
+        <p class="eyebrow">Security model</p>
+        <h2>Local-first by default, token-paired by default.</h2>
+      </div>
+      <div class="security-layout">
+        <p>
+          WinBridge AI is designed for trusted local networks first. The pairing URL
+          includes a local token, agent callbacks require that token, and generated
+          keys, logs, screenshots, and state remain on your Mac.
+        </p>
+        <pre>WINBRIDGE_PORT=47832
+WINBRIDGE_STATE_DIR=.state
+WINBRIDGE_AUTH_DISABLED=0</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>WinBridge AI</span>
+    <a href="../docs/security.md">Security notes</a>
+    <a href="../docs/protocol.md">Protocol</a>
+  </footer>
+</body>
+</html>
