@@ -1,5 +1,7 @@
 # WinBridge AI
 
+[English](README.md) | [中文](README_CN.md)
+
 Control a Windows computer from a Mac-side AI.
 
 WinBridge AI is a local-first bridge for pairing with Windows machines, running
