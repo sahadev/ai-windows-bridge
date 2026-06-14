@@ -15,8 +15,8 @@
     </a>
     <nav>
       <a href="#how" data-i18n="nav.how">How it works</a>
-      <a href="#security" data-i18n="nav.security">Security</a>
       <a href="#start" data-i18n="nav.start">Quick start</a>
+      <a href="#security" data-i18n="nav.security">Security</a>
     </nav>
     <div class="language-switch" role="group" aria-label="Language">
       <button type="button" data-lang-option="en" aria-pressed="true">EN</button>
@@ -34,7 +34,7 @@
           commands, scripts, files, processes, screenshots, logs, installers,
           diagnostics, and any workflow the connected Windows session can automate.
         </p>
-        <div class="hero-actions" id="start">
+        <div class="hero-actions">
           <code>npm start</code>
           <a class="button" href="https://github.com/sahadev/ai-windows-bridge/blob/main/README.md" data-doc-link data-i18n="hero.setupLink">Read setup</a>
         </div>
@@ -68,6 +68,47 @@ captured winbridge-screenshot-20260613.png
 <span>$</span> winbridge run "Start-Process notepad"
 launched Windows process...</pre>
       </div>
+    </section>
+
+    <section class="quickstart" id="start">
+      <div class="section-heading">
+        <p class="eyebrow" data-i18n="quick.eyebrow">Quick start</p>
+        <h2 data-i18n="quick.title">The actual pairing flow is browser first, command second.</h2>
+      </div>
+      <div class="quickstart-layout">
+        <article class="quick-card">
+          <span>01</span>
+          <h3 data-i18n="quick.step1Title">Start WinBridge AI on Mac</h3>
+          <p data-i18n="quick.step1Body">Run the local server on your Mac. The terminal prints LAN URLs that Windows can open.</p>
+          <pre>npm start
+
+# Example printed URL:
+http://192.168.0.110:47832/</pre>
+        </article>
+        <article class="quick-card quick-card-feature">
+          <span>02</span>
+          <h3 data-i18n="quick.step2Title">Open the Mac URL on Windows</h3>
+          <p data-i18n="quick.step2Body">Use a Windows browser to open the printed URL. In LAN Agent, copy the generated command and run it in PowerShell.</p>
+          <div class="agent-sample" aria-label="LAN Agent pairing preview">
+            <div>
+              <small>LAN Agent</small>
+              <strong data-i18n="quick.agentStatus">Ready to connect this Windows session</strong>
+            </div>
+            <span data-i18n="quick.copyCommand">Copy Agent Command</span>
+          </div>
+        </article>
+        <article class="quick-card">
+          <span>03</span>
+          <h3 data-i18n="quick.step3Title">Operate Windows from Mac</h3>
+          <p data-i18n="quick.step3Body">Keep the Windows PowerShell agent open. Back on Mac, use the web console, CLI, or AI tools to run real Windows work.</p>
+          <pre>npm run status
+npm run run -- "hostname; whoami"
+npm run screenshot</pre>
+        </article>
+      </div>
+      <p class="quick-note" data-i18n="quick.note">
+        Token entry is intentionally off by default for trusted LAN pairing. Enable token mode only when you need a stricter local session.
+      </p>
     </section>
 
     <section class="band" id="how">
