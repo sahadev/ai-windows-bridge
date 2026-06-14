@@ -27,7 +27,7 @@ const tokenPath = path.join(stateDir, 'pairing-token')
 const port = Number(process.env.WINBRIDGE_PORT || '47832')
 const keyPath = process.env.WINBRIDGE_SSH_KEY || path.join(stateDir, 'ssh', 'winbridge_windows_ed25519')
 const publicKeyPath = `${keyPath}.pub`
-const authDisabled = process.env.WINBRIDGE_AUTH_DISABLED === '1'
+const tokenAuthRequired = shouldRequireTokenAuth(process.env)
 
 const state = loadState()
 for (const key of ['devices', 'jobs', 'logs', 'agents']) {
@@ -62,7 +62,28 @@ function ensureKey() {
 }
 
 const publicKey = ensureKey()
-const pairingToken = process.env.WINBRIDGE_PAIRING_TOKEN || ensurePairingToken()
+const pairingToken = tokenAuthRequired ? process.env.WINBRIDGE_PAIRING_TOKEN || ensurePairingToken() : ''
+
+function normalizeEnvValue(value) {
+  return String(value || '').trim().toLowerCase()
+}
+
+function isTruthyEnv(value) {
+  return ['1', 'true', 'yes', 'on'].includes(normalizeEnvValue(value))
+}
+
+function isTokenAuthMode(value) {
+  return normalizeEnvValue(value) === 'token'
+}
+
+function hasExplicitPairingToken(env) {
+  return Boolean(String(env.WINBRIDGE_PAIRING_TOKEN || '').trim())
+}
+
+function shouldRequireTokenAuth(env) {
+  if (isTruthyEnv(env.WINBRIDGE_AUTH_DISABLED)) return false
+  return isTruthyEnv(env.WINBRIDGE_AUTH_REQUIRED) || isTokenAuthMode(env.WINBRIDGE_AUTH) || hasExplicitPairingToken(env)
+}
 
 function ensurePairingToken() {
   try {
@@ -103,7 +124,7 @@ function publicUrl(address = 'HOST_IP') {
 }
 
 function addTokenToUrl(url) {
-  if (authDisabled) return url
+  if (!tokenAuthRequired) return url
   const separator = url.includes('?') ? '&' : '?'
   return `${url}${separator}token=${encodeURIComponent(pairingToken)}`
 }
@@ -133,7 +154,7 @@ function psSingleQuote(value) {
 }
 
 function isAuthorizedRequest(req, url) {
-  if (authDisabled) return true
+  if (!tokenAuthRequired) return true
   const authHeader = String(req.headers.authorization || '')
   const bearer = authHeader.match(/^Bearer\s+(.+)$/i)?.[1]
   const provided = String(req.headers['x-winbridge-token'] || bearer || url.searchParams.get('token') || '')
@@ -187,7 +208,7 @@ function agentCommand(address = 'HOST_IP') {
 
 function windowsAgentScript(address = 'HOST_IP') {
   const base = publicUrl(address)
-  const authHashtable = authDisabled ? '@{}' : `@{'X-WinBridge-Token'='${psSingleQuote(pairingToken)}'}`
+  const authHashtable = tokenAuthRequired ? `@{'X-WinBridge-Token'='${psSingleQuote(pairingToken)}'}` : '@{}'
   return [
     "$ErrorActionPreference='Stop'",
     `$u='${psSingleQuote(base)}'`,
@@ -288,7 +309,7 @@ function windowsAgentScript(address = 'HOST_IP') {
 function windowsLogRunnerScript({ source, scriptName, args = [] }, address = 'HOST_IP') {
   const base = publicUrl(address)
   const psArgs = args.join(', ')
-  const authHashtable = authDisabled ? '@{}' : `@{'X-WinBridge-Token'='${psSingleQuote(pairingToken)}'}`
+  const authHashtable = tokenAuthRequired ? `@{'X-WinBridge-Token'='${psSingleQuote(pairingToken)}'}` : '@{}'
   return [
     "$ErrorActionPreference='Continue'",
     `$u='${psSingleQuote(base)}'`,
@@ -746,7 +767,7 @@ function renderPage(req) {
   const bootstrap = bootstrapCommand(hostAddress)
   const install = installEnvCommand(hostAddress)
   const agent = agentCommand(hostAddress)
-  const browserToken = authDisabled ? '' : pairingToken
+  const browserToken = tokenAuthRequired ? pairingToken : ''
 
   return `<!doctype html>
 <html lang="en">
@@ -1287,7 +1308,7 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`SSH key: ${keyPath}`)
   console.log(`State: ${stateDir}`)
   console.log(`Artifacts: ${artifactsDir}`)
-  console.log(`Auth: ${authDisabled ? 'disabled' : 'pairing token enabled'}`)
+  console.log(`Auth: ${tokenAuthRequired ? 'pairing token enabled' : 'disabled by default'}`)
   console.log('')
   console.log('Open one of these pairing URLs from the Windows computer:')
   for (const address of lanAddresses()) {

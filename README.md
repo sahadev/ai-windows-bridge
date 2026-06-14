@@ -27,7 +27,7 @@ npm start
 The Mac terminal prints one or more pairing URLs, for example:
 
 ```text
-http://192.168.0.110:47832/?token=...
+http://192.168.0.110:47832/
 ```
 
 On the Windows computer:
@@ -64,7 +64,7 @@ Mac starts server -> Windows browser opens Mac URL -> Windows copies/runs agent 
 By default, local runtime state stays inside this repository:
 
 - state and logs: `.state/state.json`
-- pairing token: `.state/pairing-token`
+- optional pairing token: `.state/pairing-token`
 - generated SSH key: `.state/ssh/winbridge_windows_ed25519`
 - screenshots: `.state/screenshots/`
 - files served to Windows: `artifacts/`
@@ -82,8 +82,10 @@ npm run install-artifact
 - `WINBRIDGE_STATE_DIR`: custom state directory
 - `WINBRIDGE_ARTIFACTS_DIR`: custom artifact directory
 - `WINBRIDGE_SSH_KEY`: custom SSH private key path
-- `WINBRIDGE_PAIRING_TOKEN`: override the generated local pairing token
-- `WINBRIDGE_AUTH_DISABLED=1`: disable token checks for trusted local testing
+- `WINBRIDGE_AUTH_REQUIRED=1`: require token checks for the web console, API, and Windows agent callbacks
+- `WINBRIDGE_AUTH=token`: alternative way to require token checks
+- `WINBRIDGE_PAIRING_TOKEN`: provide a fixed token and enable token checks
+- `WINBRIDGE_AUTH_DISABLED=1`: force token checks off, even if another auth variable is present
 
 ## Product Shape
 
@@ -98,10 +100,16 @@ WinBridge AI is meant to become a general Mac-to-Windows AI operation layer:
 
 ## Security Model
 
-WinBridge AI binds to `0.0.0.0` so Windows machines on the LAN can reach it. API
-and agent routes are protected by a local pairing token by default. Treat the
-printed pairing URL as a secret, run only on trusted networks, and stop the
-server when work is finished.
+WinBridge AI binds to `0.0.0.0` so Windows machines on the LAN can reach it.
+Token checks are off by default to keep the Windows pairing flow copy-paste
+friendly on a trusted LAN. To require a token, start the server with:
+
+```bash
+WINBRIDGE_AUTH_REQUIRED=1 npm start
+```
+
+When token checks are enabled, the printed pairing URL becomes sensitive. Run
+WinBridge AI only on trusted networks and stop the server when work is finished.
 
 Read [docs/security.md](docs/security.md) before exposing this beyond a trusted
 LAN.

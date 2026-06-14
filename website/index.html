@@ -75,7 +75,7 @@ installing latest NSIS package...</pre>
         <article>
           <span>01</span>
           <h3>Start on Mac</h3>
-          <p>Run the local server. It prints tokenized LAN pairing URLs and keeps all runtime state on your Mac.</p>
+          <p>Run the local server. It prints LAN pairing URLs and keeps all runtime state on your Mac.</p>
         </article>
         <article>
           <span>02</span>
@@ -111,17 +111,18 @@ installing latest NSIS package...</pre>
     <section class="security" id="security">
       <div class="section-heading">
         <p class="eyebrow">Security model</p>
-        <h2>Local-first by default, token-paired by default.</h2>
+        <h2>Local-first by default, token mode when you need it.</h2>
       </div>
       <div class="security-layout">
         <p>
-          WinBridge AI is designed for trusted local networks first. The pairing URL
-          includes a local token, agent callbacks require that token, and generated
-          keys, logs, screenshots, and state remain on your Mac.
+          WinBridge AI is designed for trusted local networks first. The default
+          pairing flow avoids manual token entry on Windows, while optional token
+          mode can protect the console, API, and agent callbacks when you need a
+          stricter LAN session.
         </p>
         <pre>WINBRIDGE_PORT=47832
 WINBRIDGE_STATE_DIR=.state
-WINBRIDGE_AUTH_DISABLED=0</pre>
+WINBRIDGE_AUTH_REQUIRED=1</pre>
       </div>
     </section>
   </main>

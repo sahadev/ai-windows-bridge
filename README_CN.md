@@ -28,7 +28,7 @@ npm start
 Mac 终端会打印一个或多个配对 URL，例如：
 
 ```text
-http://192.168.0.110:47832/?token=...
+http://192.168.0.110:47832/
 ```
 
 在 Windows 电脑上：
@@ -65,7 +65,7 @@ Mac 启动 server -> Windows 浏览器打开 Mac URL -> Windows 复制并运行 
 默认情况下，运行时数据都保存在当前仓库目录内：
 
 - 状态和日志：`.state/state.json`
-- 配对 token：`.state/pairing-token`
+- 可选配对 token：`.state/pairing-token`
 - 生成的 SSH key：`.state/ssh/winbridge_windows_ed25519`
 - 截图：`.state/screenshots/`
 - 分发给 Windows 的文件：`artifacts/`
@@ -83,8 +83,10 @@ npm run install-artifact
 - `WINBRIDGE_STATE_DIR`：自定义状态目录
 - `WINBRIDGE_ARTIFACTS_DIR`：自定义 artifact 目录
 - `WINBRIDGE_SSH_KEY`：自定义 SSH 私钥路径
-- `WINBRIDGE_PAIRING_TOKEN`：覆盖自动生成的本地配对 token
-- `WINBRIDGE_AUTH_DISABLED=1`：关闭 token 校验，仅用于可信本地测试
+- `WINBRIDGE_AUTH_REQUIRED=1`：启用 token 校验，保护 Web 控制台、API 和 Windows Agent 回调
+- `WINBRIDGE_AUTH=token`：另一种启用 token 校验的写法
+- `WINBRIDGE_PAIRING_TOKEN`：指定固定 token，并自动启用 token 校验
+- `WINBRIDGE_AUTH_DISABLED=1`：强制关闭 token 校验，即使同时存在其他认证环境变量
 
 ## 产品方向
 
@@ -100,9 +102,19 @@ WinBridge AI 的目标是成为一个通用的 Mac 到 Windows AI 操作层：
 ## 安全模型
 
 WinBridge AI 默认绑定到 `0.0.0.0`，这样同一局域网里的 Windows 机器才能访问
-Mac 上的控制服务。API 和 Agent 回调默认都受本地配对 token 保护。请把 Mac
-终端打印出来的配对 URL 当作敏感信息，不要发到公开聊天、工单或日志里。只在
-可信网络中使用，任务结束后停止 server。
+Mac 上的控制服务。为了让 Windows 端配对流程更顺手，token 校验默认关闭；
+在可信局域网里，Windows 浏览器可以直接打开 Mac 打印出来的 URL，不需要手动
+输入 token。
+
+如果你希望启用 token 校验，可以这样启动：
+
+```bash
+WINBRIDGE_AUTH_REQUIRED=1 npm start
+```
+
+启用 token 后，Mac 终端打印出来的配对 URL 就是敏感信息，不要发到公开聊天、
+工单或日志里。无论是否启用 token，都建议只在可信网络中使用，任务结束后停止
+server。
 
 如果要在可信局域网之外使用，请先阅读 [docs/security.md](docs/security.md)。
 

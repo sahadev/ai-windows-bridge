@@ -8,7 +8,7 @@ const stateDir = path.resolve(process.env.WINBRIDGE_STATE_DIR || path.join(root,
 const tokenPath = path.join(stateDir, 'pairing-token')
 const port = Number(process.env.WINBRIDGE_PORT || '47832')
 const baseUrl = process.env.WINBRIDGE_URL || `http://127.0.0.1:${port}`
-const authDisabled = process.env.WINBRIDGE_AUTH_DISABLED === '1'
+const tokenAuthRequired = shouldRequireTokenAuth(process.env)
 
 function usage() {
   console.log(`Usage:
@@ -23,11 +23,34 @@ function usage() {
 Environment:
   WINBRIDGE_URL=http://127.0.0.1:47832
   WINBRIDGE_PAIRING_TOKEN=<token>
+  WINBRIDGE_AUTH_REQUIRED=1
+  WINBRIDGE_AUTH=token
   WINBRIDGE_AUTH_DISABLED=1`)
 }
 
+function normalizeEnvValue(value) {
+  return String(value || '').trim().toLowerCase()
+}
+
+function isTruthyEnv(value) {
+  return ['1', 'true', 'yes', 'on'].includes(normalizeEnvValue(value))
+}
+
+function isTokenAuthMode(value) {
+  return normalizeEnvValue(value) === 'token'
+}
+
+function hasExplicitPairingToken(env) {
+  return Boolean(String(env.WINBRIDGE_PAIRING_TOKEN || '').trim())
+}
+
+function shouldRequireTokenAuth(env) {
+  if (isTruthyEnv(env.WINBRIDGE_AUTH_DISABLED)) return false
+  return isTruthyEnv(env.WINBRIDGE_AUTH_REQUIRED) || isTokenAuthMode(env.WINBRIDGE_AUTH) || hasExplicitPairingToken(env)
+}
+
 function readToken() {
-  if (authDisabled) return ''
+  if (!tokenAuthRequired) return ''
   if (process.env.WINBRIDGE_PAIRING_TOKEN) return process.env.WINBRIDGE_PAIRING_TOKEN
   if (existsSync(tokenPath)) return readFileSync(tokenPath, 'utf8').trim()
   return ''

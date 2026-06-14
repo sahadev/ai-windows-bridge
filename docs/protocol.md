@@ -5,21 +5,26 @@ WinBridge AI uses a simple Mac-hosted HTTP polling protocol.
 ## Pairing
 
 1. Mac starts `server.mjs`.
-2. Mac prints a tokenized pairing URL.
+2. Mac prints a LAN pairing URL. If token mode is enabled, the URL includes the
+   token query parameter.
 3. Windows opens the URL and copies the generated agent command.
 4. Windows agent posts registration data to `/api/agent/register`.
 5. Mac stores the agent in `.state/state.json`.
 
 ## Authentication
 
-Requests are authorized when one of these values matches the pairing token:
+Token checks are off by default for trusted LAN use.
+
+When token mode is enabled, requests are authorized when one of these values
+matches the pairing token:
 
 - `X-WinBridge-Token: <token>`
 - `Authorization: Bearer <token>`
 - `?token=<token>`
 
 The query token exists so one-line Windows commands can download scripts without
-manual header setup.
+manual header setup. To enable token mode, set `WINBRIDGE_AUTH_REQUIRED=1`,
+`WINBRIDGE_AUTH=token`, or provide `WINBRIDGE_PAIRING_TOKEN`.
 
 ## Job Lifecycle
 
