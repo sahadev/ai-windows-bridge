@@ -76,9 +76,40 @@ nav {
   font-size: 14px;
 }
 
+.language-switch {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.language-switch button {
+  min-width: 48px;
+  min-height: 34px;
+  border: 0;
+  background: #0d1218;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+
+.language-switch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #06110d;
+  font-weight: 800;
+}
+
 nav a:hover,
-footer a:hover {
+footer a:hover,
+.language-switch button:hover {
   color: var(--accent);
+}
+
+.language-switch button[aria-pressed="true"]:hover {
+  color: #06110d;
 }
 
 main {
@@ -366,6 +397,10 @@ footer span {
 
   nav {
     display: none;
+  }
+
+  .language-switch {
+    margin-left: auto;
   }
 
   .hero,

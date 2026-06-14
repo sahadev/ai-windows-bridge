@@ -14,25 +14,29 @@
       <span>WinBridge AI</span>
     </a>
     <nav>
-      <a href="#how">How it works</a>
-      <a href="#security">Security</a>
-      <a href="#start">Quick start</a>
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#security" data-i18n="nav.security">Security</a>
+      <a href="#start" data-i18n="nav.start">Quick start</a>
     </nav>
+    <div class="language-switch" role="group" aria-label="Language">
+      <button type="button" data-lang-option="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang-option="zh" aria-pressed="false">中文</button>
+    </div>
   </header>
 
   <main id="top">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">Mac control plane. Windows execution surface.</p>
-        <h1>Control Windows from your Mac-side AI.</h1>
-        <p class="lede">
+        <p class="eyebrow" data-i18n="hero.eyebrow">Mac control plane. Windows execution surface.</p>
+        <h1 data-i18n="hero.title">Control Windows from your Mac-side AI.</h1>
+        <p class="lede" data-i18n="hero.lede">
           WinBridge AI connects a Windows PC to your Mac so agents can run commands,
           capture screenshots, install artifacts, inspect logs, and drive verification
           without installing an AI environment on Windows.
         </p>
         <div class="hero-actions" id="start">
           <code>npm start</code>
-          <a class="button" href="../README.md">Read setup</a>
+          <a class="button" href="https://github.com/sahadev/ai-windows-bridge/blob/main/README.md" data-doc-link data-i18n="hero.setupLink">Read setup</a>
         </div>
       </div>
 
@@ -43,15 +47,15 @@
         </div>
         <div class="console-grid">
           <div>
-            <small>paired agent</small>
+            <small data-i18n="console.agentLabel">paired agent</small>
             <b>DESKTOP-7Q9 / builder</b>
           </div>
           <div>
-            <small>last seen</small>
-            <b>2s ago</b>
+            <small data-i18n="console.lastSeenLabel">last seen</small>
+            <b data-i18n="console.lastSeenValue">2s ago</b>
           </div>
           <div>
-            <small>queued jobs</small>
+            <small data-i18n="console.jobsLabel">queued jobs</small>
             <b>3</b>
           </div>
         </div>
@@ -68,53 +72,53 @@ installing latest NSIS package...</pre>
 
     <section class="band" id="how">
       <div class="section-heading">
-        <p class="eyebrow">How it works</p>
-        <h2>One bridge, two machines, no Windows-side AI setup.</h2>
+        <p class="eyebrow" data-i18n="how.eyebrow">How it works</p>
+        <h2 data-i18n="how.title">One bridge, two machines, no Windows-side AI setup.</h2>
       </div>
       <div class="steps">
         <article>
           <span>01</span>
-          <h3>Start on Mac</h3>
-          <p>Run the local server. It prints LAN pairing URLs and keeps all runtime state on your Mac.</p>
+          <h3 data-i18n="how.step1Title">Start on Mac</h3>
+          <p data-i18n="how.step1Body">Run the local server. It prints LAN pairing URLs and keeps all runtime state on your Mac.</p>
         </article>
         <article>
           <span>02</span>
-          <h3>Pair Windows</h3>
-          <p>Open the URL on Windows and run the generated PowerShell agent command. The agent polls the Mac.</p>
+          <h3 data-i18n="how.step2Title">Pair Windows</h3>
+          <p data-i18n="how.step2Body">Open the URL on Windows and run the generated PowerShell agent command. The agent polls the Mac.</p>
         </article>
         <article>
           <span>03</span>
-          <h3>Let AI operate</h3>
-          <p>Use the web console, CLI, and future MCP tools to run jobs, collect logs, inspect screenshots, and install builds.</p>
+          <h3 data-i18n="how.step3Title">Let AI operate</h3>
+          <p data-i18n="how.step3Body">Use the web console, CLI, and future MCP tools to run jobs, collect logs, inspect screenshots, and install builds.</p>
         </article>
       </div>
     </section>
 
     <section class="capabilities">
       <div>
-        <h2>Built for real Windows work.</h2>
-        <p>
+        <h2 data-i18n="capabilities.title">Built for real Windows work.</h2>
+        <p data-i18n="capabilities.body">
           The first release focuses on the operations AI agents need when macOS is
           the thinking environment and Windows is the execution target.
         </p>
       </div>
       <ul>
-        <li>PowerShell command queueing</li>
-        <li>Progress logs and exit codes</li>
-        <li>Screenshot capture</li>
-        <li>Artifact serving and installer execution</li>
-        <li>Optional OpenSSH bootstrap</li>
-        <li>CLI-first automation surface</li>
+        <li data-i18n="capabilities.item1">PowerShell command queueing</li>
+        <li data-i18n="capabilities.item2">Progress logs and exit codes</li>
+        <li data-i18n="capabilities.item3">Screenshot capture</li>
+        <li data-i18n="capabilities.item4">Artifact serving and installer execution</li>
+        <li data-i18n="capabilities.item5">Optional OpenSSH bootstrap</li>
+        <li data-i18n="capabilities.item6">CLI-first automation surface</li>
       </ul>
     </section>
 
     <section class="security" id="security">
       <div class="section-heading">
-        <p class="eyebrow">Security model</p>
-        <h2>Local-first by default, token mode when you need it.</h2>
+        <p class="eyebrow" data-i18n="security.eyebrow">Security model</p>
+        <h2 data-i18n="security.title">Local-first by default, token mode when you need it.</h2>
       </div>
       <div class="security-layout">
-        <p>
+        <p data-i18n="security.body">
           WinBridge AI is designed for trusted local networks first. The default
           pairing flow avoids manual token entry on Windows, while optional token
           mode can protect the console, API, and agent callbacks when you need a
@@ -129,8 +133,9 @@ WINBRIDGE_AUTH_REQUIRED=1</pre>
 
   <footer>
     <span>WinBridge AI</span>
-    <a href="../docs/security.md">Security notes</a>
-    <a href="../docs/protocol.md">Protocol</a>
+    <a href="https://github.com/sahadev/ai-windows-bridge/blob/main/docs/security.md" data-i18n="footer.security">Security notes</a>
+    <a href="https://github.com/sahadev/ai-windows-bridge/blob/main/docs/protocol.md" data-i18n="footer.protocol">Protocol</a>
   </footer>
+  <script src="./site.js"></script>
 </body>
 </html>
