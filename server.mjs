@@ -776,60 +776,147 @@ function renderPage(req) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${productName}</title>
   <style>
-    :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { margin: 0; background: #f6f7f9; color: #16181d; }
-    main { max-width: 1080px; margin: 0 auto; padding: 28px 20px 56px; }
-    section { background: #fff; border: 1px solid #d8dde6; border-radius: 8px; padding: 18px; margin-top: 16px; }
-    h1 { margin: 0 0 8px; font-size: 28px; }
-    h2 { margin: 0 0 12px; font-size: 18px; }
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #edf2f8;
+      --text: #151922;
+      --muted: #5f6b7a;
+      --line: #d7dee9;
+      --primary: #1769e0;
+      --primary-text: #ffffff;
+      --accent: #0f9f77;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 56px; }
+    section, details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin-top: 16px; }
+    h1 { margin: 0 0 10px; font-size: clamp(32px, 6vw, 58px); line-height: 0.96; max-width: 760px; }
+    h2 { margin: 0 0 12px; font-size: 20px; }
+    h3 { margin: 0 0 8px; font-size: 16px; }
     p { line-height: 1.55; }
     a { color: #1769e0; }
     code, pre, textarea { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
     pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #10141c; color: #edf3ff; border-radius: 8px; padding: 14px; }
-    textarea { box-sizing: border-box; width: 100%; border: 1px solid #b7c1d1; border-radius: 8px; padding: 10px; background: transparent; color: inherit; }
-    button { border: 1px solid #b7c1d1; background: #fff; color: #111827; border-radius: 6px; padding: 9px 12px; cursor: pointer; margin: 0 8px 8px 0; }
-    button.primary { border-color: #1769e0; background: #1769e0; color: #fff; }
-    .muted { color: #5f6b7a; }
+    textarea { width: 100%; border: 1px solid #b7c1d1; border-radius: 8px; padding: 10px; background: transparent; color: inherit; }
+    button { border: 1px solid #b7c1d1; background: var(--surface); color: var(--text); border-radius: 6px; padding: 9px 12px; cursor: pointer; margin: 0 8px 8px 0; font: inherit; }
+    button.primary { border-color: var(--primary); background: var(--primary); color: var(--primary-text); font-weight: 800; }
+    button.copy-main { min-height: 56px; padding: 0 22px; font-size: 17px; }
+    summary { cursor: pointer; font-weight: 800; }
+    details > div { margin-top: 14px; }
+    .muted { color: var(--muted); }
+    .eyebrow { margin: 0 0 12px; color: var(--accent); font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    .hero { background: linear-gradient(135deg, #ffffff, #eef5ff); padding: 28px; }
+    .agent-primary { border-color: rgba(23, 105, 224, 0.45); box-shadow: 0 18px 60px rgba(23, 105, 224, 0.12); }
+    .agent-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: end; }
+    .step-label { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; background: #e6f7f2; color: #08775b; font-weight: 900; font-size: 13px; }
+    .copy-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+    .copy-status { min-height: 24px; color: var(--accent); font-weight: 700; }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 16px; border: 1px solid var(--line); background: var(--line); }
+    .steps article { min-width: 0; padding: 14px; background: var(--surface); }
+    .steps span { color: var(--primary); font-weight: 900; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
     .item { border: 1px solid #e0e5ee; border-radius: 8px; padding: 12px; margin-top: 10px; }
     .log { max-height: 420px; overflow: auto; }
     img.shot { max-width: 100%; height: auto; border: 1px solid #d8dde6; border-radius: 6px; }
+    .secondary-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
     @media (prefers-color-scheme: dark) {
-      body { background: #111318; color: #ecf0f7; }
-      section { background: #181b22; border-color: #303744; }
-      button { background: #202632; color: #f5f7fb; border-color: #4a5568; }
-      button.primary { background: #4b8dff; border-color: #4b8dff; color: #07101f; }
-      .muted { color: #a7b1c2; }
+      :root {
+        --bg: #101318;
+        --surface: #181c24;
+        --surface-2: #202735;
+        --text: #ecf0f7;
+        --muted: #a7b1c2;
+        --line: #303744;
+        --primary: #7ab0ff;
+        --primary-text: #07101f;
+        --accent: #8ee6c8;
+      }
+      .hero { background: linear-gradient(135deg, #171d27, #111827); }
+      .step-label { background: rgba(142, 230, 200, 0.14); color: var(--accent); }
+      button { background: #202632; border-color: #4a5568; }
       .item { border-color: #303744; }
+    }
+    @media (max-width: 760px) {
+      main { padding: 18px 12px 44px; }
+      .hero { padding: 20px; }
+      .agent-header, .steps { grid-template-columns: 1fr; }
+      button.copy-main { width: 100%; justify-content: center; }
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>${productName}</h1>
-    <p class="muted">Local-first AI bridge for operating Windows machines from a Mac.</p>
+    <section class="hero">
+      <p class="eyebrow">Windows pairing page</p>
+      <h1>Start the Windows LAN Agent.</h1>
+      <p class="muted">Run the generated PowerShell command on this Windows machine, then keep that PowerShell window open so the Mac-side AI can operate Windows.</p>
+    </section>
+
+    <section class="agent-primary">
+      <div class="agent-header">
+        <div>
+          <span class="step-label">Step 1</span>
+          <h2>Copy and run this Agent command</h2>
+          <p class="muted">Click the button, paste the command into Windows PowerShell, and press Enter.</p>
+        </div>
+        <button class="primary copy-main" onclick="copyText('agent', this)">Copy Agent Command</button>
+      </div>
+      <pre id="agent">${htmlEscape(agent)}</pre>
+      <div class="copy-row">
+        <button onclick="copyText('agent', this)">Copy again</button>
+        <span id="agent-copy-status" class="copy-status" aria-live="polite"></span>
+      </div>
+      <div class="steps">
+        <article><span>01</span><h3>Copy</h3><p class="muted">Use the primary button above.</p></article>
+        <article><span>02</span><h3>Paste in PowerShell</h3><p class="muted">Run it on this Windows computer.</p></article>
+        <article><span>03</span><h3>Keep it open</h3><p class="muted">The Mac can operate Windows while the Agent stays connected.</p></article>
+      </div>
+    </section>
 
     <section>
-      <h2>Open From Windows</h2>
+      <h2>Connection Status</h2>
+      <div id="agents" class="muted">Loading...</div>
+      <p>
+        <button onclick="refreshStatus()">Refresh</button>
+        <button onclick="testAgent()">Test Agent</button>
+        <button onclick="captureScreenshot()">Capture Screenshot</button>
+      </p>
+    </section>
+
+    <section>
+      <h2>Mac pairing URL</h2>
+      <p class="muted">You are already on this page. These URLs are shown only for checking the address from another Windows browser.</p>
       <div class="grid">${urls.map((url) => `<pre>${htmlEscape(url)}</pre>`).join('')}</div>
     </section>
 
-    <section>
-      <h2>LAN Agent</h2>
-      <pre id="agent">${htmlEscape(agent)}</pre>
-      <button onclick="copyText('agent')">Copy Agent Command</button>
-    </section>
+    <details>
+      <summary>Optional setup commands</summary>
+      <div class="secondary-actions">
+        <div>
+          <h3>Optional SSH Bootstrap</h3>
+          <pre id="bootstrap">${htmlEscape(bootstrap)}</pre>
+          <button onclick="copyText('bootstrap', this)">Copy SSH Bootstrap</button>
+        </div>
+        <div>
+          <h3>Optional Build Environment</h3>
+          <pre id="install">${htmlEscape(install)}</pre>
+          <button onclick="copyText('install', this)">Copy Installer Command</button>
+        </div>
+      </div>
+    </details>
 
     <section>
-      <h2>Optional SSH Bootstrap</h2>
-      <pre id="bootstrap">${htmlEscape(bootstrap)}</pre>
-      <button onclick="copyText('bootstrap')">Copy SSH Bootstrap</button>
-    </section>
-
-    <section>
-      <h2>Optional Build Environment</h2>
-      <pre id="install">${htmlEscape(install)}</pre>
-      <button onclick="copyText('install')">Copy Installer Command</button>
+      <h2>Run PowerShell on Windows</h2>
+      <textarea id="customScript" rows="8" placeholder="PowerShell script to run on the connected Windows agent"></textarea>
+      <p>
+        <button class="primary" onclick="runPowerShell()">Run PowerShell</button>
+        <button onclick="preflightAgent()">Preflight</button>
+        <button onclick="installEnvViaAgent()">Install Build Env</button>
+        <button class="primary" onclick="installLatestArtifact()">Install Latest Artifact</button>
+      </p>
     </section>
 
     <section>
@@ -846,23 +933,8 @@ function renderPage(req) {
       <h2>SSH Devices</h2>
       <div id="devices" class="muted">Loading...</div>
       <p>
-        <button onclick="refreshStatus()">Refresh</button>
         <button onclick="testSsh()">Test SSH</button>
       </p>
-    </section>
-
-    <section>
-      <h2>LAN Agents</h2>
-      <div id="agents" class="muted">Loading...</div>
-      <p>
-        <button onclick="testAgent()">Test Agent</button>
-        <button onclick="preflightAgent()">Preflight</button>
-        <button onclick="installEnvViaAgent()">Install Build Env</button>
-        <button onclick="captureScreenshot()">Capture Screenshot</button>
-        <button class="primary" onclick="installLatestArtifact()">Install Latest Artifact</button>
-      </p>
-      <textarea id="customScript" rows="8" placeholder="PowerShell script to run on the connected Windows agent"></textarea>
-      <p><button class="primary" onclick="runPowerShell()">Run PowerShell</button></p>
     </section>
 
     <section>
@@ -879,8 +951,43 @@ function renderPage(req) {
   </main>
   <script>
     const winbridgeToken = ${JSON.stringify(browserToken)};
-    async function copyText(id) {
-      await navigator.clipboard.writeText(document.getElementById(id).textContent);
+    function showCopyStatus(id, message) {
+      const status = document.getElementById(id + '-copy-status');
+      if (!status) return;
+      status.textContent = message;
+      window.clearTimeout(status._timer);
+      status._timer = window.setTimeout(() => {
+        status.textContent = '';
+      }, 2400);
+    }
+    async function copyText(id, button) {
+      const text = document.getElementById(id).textContent;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.top = '-1000px';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        const original = button ? button.textContent : '';
+        if (button) {
+          button.textContent = 'Copied';
+          window.setTimeout(() => {
+            button.textContent = original;
+          }, 1400);
+        }
+        showCopyStatus(id, 'Copied. Paste it into Windows PowerShell and press Enter.');
+      } catch (error) {
+        showCopyStatus(id, 'Copy failed. Select the command text and copy it manually.');
+        throw error;
+      }
     }
     async function api(path, options = {}) {
       const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
