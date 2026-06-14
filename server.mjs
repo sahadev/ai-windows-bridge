@@ -30,7 +30,7 @@ const publicKeyPath = `${keyPath}.pub`
 const tokenAuthRequired = shouldRequireTokenAuth(process.env)
 
 const state = loadState()
-for (const key of ['devices', 'jobs', 'logs', 'agents']) {
+for (const key of ['devices', 'jobs', 'logs', 'agents', 'messages']) {
   if (!Array.isArray(state[key])) state[key] = []
 }
 normalizeState()
@@ -39,7 +39,7 @@ function loadState() {
   try {
     return JSON.parse(readFileSync(statePath, 'utf8'))
   } catch {
-    return { devices: [], jobs: [], logs: [], agents: [] }
+    return { devices: [], jobs: [], logs: [], agents: [], messages: [] }
   }
 }
 
@@ -519,6 +519,28 @@ function storeLog(payload, requestAddress) {
   return log
 }
 
+function normalizeMessageDirection(value) {
+  return String(value || '').trim().toLowerCase() === 'mac' ? 'mac' : 'windows'
+}
+
+function storeMessage(payload, requestAddress) {
+  const text = String(payload.text || '').trim()
+  if (!text) throw new Error('Missing message text')
+  const message = {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    direction: normalizeMessageDirection(payload.direction),
+    agentId: String(payload.agentId || '').trim(),
+    author: String(payload.author || '').trim(),
+    remoteAddress: requestAddress,
+    createdAt: new Date().toISOString(),
+    text: text.slice(0, 8000),
+  }
+  state.messages.unshift(message)
+  state.messages = state.messages.slice(0, 80)
+  saveState()
+  return message
+}
+
 function upsertAgent(payload, requestAddress) {
   const agent = {
     id: String(payload.agentId || '').trim(),
@@ -813,6 +835,7 @@ function renderPage(req) {
     .agent-primary { border-color: rgba(23, 105, 224, 0.45); box-shadow: 0 18px 60px rgba(23, 105, 224, 0.12); }
     .agent-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: end; }
     .step-label { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; background: #e6f7f2; color: #08775b; font-weight: 900; font-size: 13px; }
+    .step-label + h2 { margin-top: 12px; }
     .copy-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
     .copy-status { min-height: 24px; color: var(--accent); font-weight: 700; }
     .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 16px; border: 1px solid var(--line); background: var(--line); }
@@ -885,6 +908,16 @@ function renderPage(req) {
         <button onclick="testAgent()">Test Agent</button>
         <button onclick="captureScreenshot()">Capture Screenshot</button>
       </p>
+    </section>
+
+    <section>
+      <h2>Send a message to Mac</h2>
+      <p class="muted">Use this when you want to tell the Mac-side operator what happened on Windows.</p>
+      <textarea id="windowsMessage" rows="4" placeholder="Example: Agent is running, but PowerShell asked for permission."></textarea>
+      <p>
+        <button class="primary" onclick="sendWindowsMessage()">Send Message</button>
+      </p>
+      <div id="messages" class="muted">Loading...</div>
     </section>
 
     <section>
@@ -1087,6 +1120,20 @@ function renderPage(req) {
           '<br>Queued: ' + escapeHtml((agent.queue || []).length) + '</div>').join('');
       }
 
+      const messages = document.getElementById('messages');
+      if (messages) {
+        if (!status.messages.length) {
+          messages.textContent = 'No messages yet.';
+        } else {
+          messages.innerHTML = status.messages.slice(0, 10).map((message) => '<div class="item"><strong>' +
+            escapeHtml(message.direction === 'mac' ? 'Mac' : 'Windows') + '</strong> ' +
+            escapeHtml(message.author || message.agentId || '') +
+            '<br><span class="muted">' + escapeHtml(message.createdAt || '') +
+            (message.remoteAddress ? ' from ' + escapeHtml(message.remoteAddress) : '') +
+            '</span><p>' + escapeHtml(message.text || '') + '</p></div>').join('');
+        }
+      }
+
       const logs = document.getElementById('logs');
       if (!status.logs.length) {
         logs.textContent = 'No uploaded logs yet.';
@@ -1157,6 +1204,20 @@ function renderPage(req) {
       alert('Queued PowerShell job ' + result.id);
       await refreshStatus();
     }
+    async function sendWindowsMessage() {
+      const textarea = document.getElementById('windowsMessage');
+      const text = textarea.value.trim();
+      if (!text) {
+        alert('Enter a message first.');
+        return;
+      }
+      await api('/api/message', {
+        method: 'POST',
+        body: JSON.stringify({ direction: 'windows', text }),
+      });
+      textarea.value = '';
+      await refreshStatus();
+    }
     async function cancelAgentJob(jobId) {
       await api('/api/agent/cancel', { method: 'POST', body: JSON.stringify({ jobId }) });
       await refreshStatus();
@@ -1182,6 +1243,282 @@ function renderPage(req) {
 </html>`
 }
 
+function renderConsolePage() {
+  const browserToken = tokenAuthRequired ? pairingToken : ''
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${productName} Console</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f1318;
+      --surface: #171d25;
+      --surface-2: #202836;
+      --text: #edf3f7;
+      --muted: #9aa8b6;
+      --line: #303a48;
+      --primary: #8ee6c8;
+      --primary-text: #07110e;
+      --warn: #f7cf6a;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    main { max-width: 1320px; margin: 0 auto; padding: 28px 20px 56px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+    h1 { margin: 0; font-size: clamp(34px, 6vw, 64px); line-height: 0.95; }
+    h2 { margin: 0 0 12px; font-size: 20px; }
+    p { line-height: 1.55; }
+    a { color: var(--primary); }
+    button { border: 1px solid var(--line); background: var(--surface-2); color: var(--text); border-radius: 6px; padding: 9px 12px; cursor: pointer; margin: 0 8px 8px 0; font: inherit; }
+    button.primary { border-color: var(--primary); background: var(--primary); color: var(--primary-text); font-weight: 800; }
+    textarea { width: 100%; min-height: 112px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #0c1015; color: var(--text); font: inherit; }
+    code, pre, textarea { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #0c1015; color: #e8f2ee; border-radius: 8px; padding: 12px; }
+    section { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+    .muted { color: var(--muted); }
+    .console-grid { display: grid; grid-template-columns: minmax(340px, 0.78fr) minmax(0, 1.22fr); gap: 16px; align-items: start; }
+    .stack { display: grid; gap: 16px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .metric { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+    .metric strong { display: block; font-size: 26px; }
+    .item { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-top: 10px; background: rgba(255, 255, 255, 0.02); }
+    .item p { margin-bottom: 0; }
+    .log { max-height: 340px; overflow: auto; }
+    .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    img.shot { max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }
+    @media (max-width: 920px) {
+      header, .console-grid, .metrics { grid-template-columns: 1fr; display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="muted">Mac control console</p>
+        <h1>Operate connected Windows.</h1>
+      </div>
+      <div>
+        <a href="/">Windows pairing page</a>
+      </div>
+    </header>
+
+    <div class="metrics">
+      <div class="metric"><span class="muted">Agents</span><strong id="metricAgents">0</strong></div>
+      <div class="metric"><span class="muted">Jobs</span><strong id="metricJobs">0</strong></div>
+      <div class="metric"><span class="muted">Screenshots</span><strong id="metricScreenshots">0</strong></div>
+      <div class="metric"><span class="muted">Messages</span><strong id="metricMessages">0</strong></div>
+    </div>
+
+    <div class="console-grid">
+      <div class="stack">
+        <section>
+          <h2>LAN Agents</h2>
+          <div id="agents" class="muted">Loading...</div>
+          <p>
+            <button onclick="refreshStatus()">Refresh</button>
+            <button onclick="testAgent()">Test Agent</button>
+            <button class="primary" onclick="captureScreenshot()">Capture Screenshot</button>
+          </p>
+        </section>
+
+        <section>
+          <h2>Message Windows</h2>
+          <textarea id="macMessage" placeholder="Message shown in the shared message stream."></textarea>
+          <p><button class="primary" onclick="sendMacMessage()">Send Message</button></p>
+        </section>
+
+        <section>
+          <h2>Run PowerShell</h2>
+          <textarea id="customScript" placeholder="PowerShell script to run on the connected Windows agent"></textarea>
+          <p>
+            <button class="primary" onclick="runPowerShell()">Run PowerShell</button>
+            <button onclick="preflightAgent()">Preflight</button>
+            <button onclick="installEnvViaAgent()">Install Build Env</button>
+            <button onclick="installLatestArtifact()">Install Latest Artifact</button>
+          </p>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section>
+          <h2>Messages</h2>
+          <div id="messages" class="muted">Loading...</div>
+        </section>
+
+        <section>
+          <h2>Screenshots</h2>
+          <div id="screenshots" class="muted">Loading...</div>
+        </section>
+
+        <section>
+          <h2>Jobs</h2>
+          <div id="jobs" class="muted">Loading...</div>
+        </section>
+
+        <section>
+          <h2>Uploaded Logs</h2>
+          <div id="logs" class="muted">Loading...</div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script>
+    const winbridgeToken = ${JSON.stringify(browserToken)};
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (winbridgeToken) headers['X-WinBridge-Token'] = winbridgeToken;
+      const response = await fetch(path, { ...options, headers });
+      const text = await response.text();
+      let payload;
+      try { payload = JSON.parse(text); } catch { payload = text; }
+      if (!response.ok) throw new Error(typeof payload === 'string' ? payload : payload.error || response.statusText);
+      return payload;
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    }
+    function formatBytes(value) {
+      const bytes = Number(value || 0);
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+    function isCancellableAgentJob(job) {
+      return String(job.command || '').startsWith('[agent]') && ['queued', 'running', 'cancelling'].includes(job.status);
+    }
+    function renderStatus(status) {
+      document.getElementById('metricAgents').textContent = status.agents.length;
+      document.getElementById('metricJobs').textContent = status.jobs.length;
+      document.getElementById('metricScreenshots').textContent = status.screenshots.length;
+      document.getElementById('metricMessages').textContent = status.messages.length;
+
+      const agents = document.getElementById('agents');
+      if (!status.agents.length) {
+        agents.textContent = 'No LAN agent connected yet.';
+      } else {
+        agents.innerHTML = status.agents.map((agent) => '<div class="item"><strong>' +
+          escapeHtml(agent.username || '') + '@' + escapeHtml(agent.computerName || '') +
+          '</strong><br>ID: ' + escapeHtml(agent.id) +
+          '<br>Address: ' + escapeHtml(agent.remoteAddress || '') +
+          '<br>Last seen: ' + escapeHtml(agent.lastSeenAt || '') +
+          '<br>Queued: ' + escapeHtml((agent.queue || []).length) + '</div>').join('');
+      }
+
+      const messages = document.getElementById('messages');
+      if (!status.messages.length) {
+        messages.textContent = 'No messages yet.';
+      } else {
+        messages.innerHTML = status.messages.map((message) => '<div class="item"><strong>' +
+          escapeHtml(message.direction === 'mac' ? 'Mac' : 'Windows') + '</strong> ' +
+          escapeHtml(message.author || message.agentId || '') +
+          '<br><span class="muted">' + escapeHtml(message.createdAt || '') +
+          (message.remoteAddress ? ' from ' + escapeHtml(message.remoteAddress) : '') +
+          '</span><p>' + escapeHtml(message.text || '') + '</p></div>').join('');
+      }
+
+      const screenshots = document.getElementById('screenshots');
+      if (!status.screenshots.length) {
+        screenshots.textContent = 'No screenshots yet.';
+      } else {
+        screenshots.innerHTML = '<div class="shots">' + status.screenshots.slice(0, 8).map((shot) => '<div class="item"><strong>' +
+          escapeHtml(shot.name) + '</strong><br><span class="muted">' + formatBytes(shot.size) +
+          ' - ' + escapeHtml(shot.mtime) + '</span><p><a href="' + escapeHtml(shot.href) +
+          '" target="_blank">Open</a></p><img class="shot" alt="Windows screenshot" src="' +
+          escapeHtml(shot.href) + '" /></div>').join('') + '</div>';
+      }
+
+      const jobs = document.getElementById('jobs');
+      if (!status.jobs.length) {
+        jobs.textContent = 'No jobs yet.';
+      } else {
+        jobs.innerHTML = status.jobs.map((job) => '<div class="item"><strong>' + escapeHtml(job.status) +
+          '</strong> ' + escapeHtml(job.command) + '<br><span class="muted">' + escapeHtml(job.startedAt) +
+          (job.finishedAt ? ' - ' + escapeHtml(job.finishedAt) : '') + '</span>' +
+          (isCancellableAgentJob(job) ? '<p><button onclick="cancelAgentJob(\\'' + escapeHtml(job.id) + '\\')">Cancel Agent Job</button></p>' : '') +
+          '<pre class="log">' + escapeHtml(job.log || '') + '</pre></div>').join('');
+      }
+
+      const logs = document.getElementById('logs');
+      if (!status.logs.length) {
+        logs.textContent = 'No uploaded logs yet.';
+      } else {
+        logs.innerHTML = status.logs.map((entry) => '<div class="item"><strong>' +
+          escapeHtml(entry.source) + '</strong> exit=' + escapeHtml(entry.exitCode) + ' ' +
+          escapeHtml(entry.username || '') + '@' + escapeHtml(entry.computerName || '') +
+          '<br><span class="muted">' + escapeHtml(entry.receivedAt) + ' from ' +
+          escapeHtml(entry.remoteAddress || '') + '</span><pre class="log">' +
+          escapeHtml(entry.log || '') + '</pre></div>').join('');
+      }
+    }
+    async function refreshStatus() {
+      renderStatus(await api('/api/status'));
+    }
+    async function sendMacMessage() {
+      const textarea = document.getElementById('macMessage');
+      const text = textarea.value.trim();
+      if (!text) {
+        alert('Enter a message first.');
+        return;
+      }
+      await api('/api/message', { method: 'POST', body: JSON.stringify({ direction: 'mac', author: 'Mac', text }) });
+      textarea.value = '';
+      await refreshStatus();
+    }
+    async function testAgent() {
+      const result = await api('/api/agent/test', { method: 'POST', body: '{}' });
+      alert('Queued agent test job ' + result.id);
+      await refreshStatus();
+    }
+    async function preflightAgent() {
+      const result = await api('/api/agent/preflight', { method: 'POST', body: '{}' });
+      alert('Queued preflight job ' + result.id);
+      await refreshStatus();
+    }
+    async function installEnvViaAgent() {
+      const result = await api('/api/agent/install-env', { method: 'POST', body: '{}' });
+      alert('Queued build environment installation job ' + result.id);
+      await refreshStatus();
+    }
+    async function captureScreenshot() {
+      const result = await api('/api/agent/capture-screenshot', { method: 'POST', body: '{}' });
+      alert('Queued screenshot job ' + result.id);
+      await refreshStatus();
+    }
+    async function installLatestArtifact() {
+      const result = await api('/api/agent/install-artifact', { method: 'POST', body: '{}' });
+      alert('Queued artifact installation job ' + result.id);
+      await refreshStatus();
+    }
+    async function runPowerShell() {
+      const textarea = document.getElementById('customScript');
+      const script = textarea.value.trim();
+      if (!script) {
+        alert('Enter a PowerShell script first.');
+        return;
+      }
+      const result = await api('/api/agent/run-powershell', {
+        method: 'POST',
+        body: JSON.stringify({ title: 'Console PowerShell', script }),
+      });
+      alert('Queued PowerShell job ' + result.id);
+      await refreshStatus();
+    }
+    async function cancelAgentJob(jobId) {
+      await api('/api/agent/cancel', { method: 'POST', body: JSON.stringify({ jobId }) });
+      await refreshStatus();
+    }
+    refreshStatus();
+    setInterval(refreshStatus, 3000);
+  </script>
+</body>
+</html>`
+}
+
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || `localhost:${port}`}`)
@@ -1190,6 +1527,11 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/') {
       if (!isAuthorizedRequest(req, url)) return send(res, 401, renderLockedPage(req))
       return send(res, 200, renderPage(req))
+    }
+
+    if (req.method === 'GET' && url.pathname === '/console') {
+      if (!isAuthorizedRequest(req, url)) return send(res, 401, renderLockedPage(req))
+      return send(res, 200, renderConsolePage())
     }
 
     if (!isAuthorizedRequest(req, url)) {
@@ -1247,6 +1589,7 @@ const server = createServer(async (req, res) => {
         jobs: state.jobs,
         logs: state.logs,
         agents: state.agents,
+        messages: state.messages,
         artifacts: artifacts(),
         screenshots: screenshots(),
       })
@@ -1264,6 +1607,13 @@ const server = createServer(async (req, res) => {
       const log = storeLog(body, normalizeRemoteAddress(req.socket.remoteAddress))
       console.log(`Received Windows log: ${log.source} exit=${log.exitCode}`)
       return send(res, 200, { ok: true })
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/message') {
+      const body = await parseBody(req)
+      const message = storeMessage(body, normalizeRemoteAddress(req.socket.remoteAddress))
+      console.log(`Message ${message.direction}: ${message.text.slice(0, 80)}`)
+      return send(res, 200, { ok: true, message })
     }
 
     if (req.method === 'POST' && url.pathname === '/api/agent/register') {
@@ -1444,6 +1794,9 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`State: ${stateDir}`)
   console.log(`Artifacts: ${artifactsDir}`)
   console.log(`Auth: ${tokenAuthRequired ? 'pairing token enabled' : 'disabled by default'}`)
+  console.log('')
+  console.log('Open the Mac control console here:')
+  console.log(`  ${addTokenToUrl(`http://127.0.0.1:${port}/console`)}`)
   console.log('')
   console.log('Open one of these pairing URLs from the Windows computer:')
   for (const address of lanAddresses()) {
