@@ -79,10 +79,13 @@ launched Windows process...</pre>
         <article class="quick-card">
           <span>01</span>
           <h3 data-i18n="quick.step1Title">Start WinBridge AI on Mac</h3>
-          <p data-i18n="quick.step1Body">Run the local server on your Mac. The terminal prints LAN URLs that Windows can open.</p>
+          <p data-i18n="quick.step1Body">Run the local server on your Mac. The terminal prints the Mac console URL and LAN URLs that Windows can open.</p>
           <pre>npm start
 
-# Example printed URL:
+# Mac control console:
+http://127.0.0.1:47832/console
+
+# Windows pairing URL:
 http://192.168.0.110:47832/</pre>
         </article>
         <article class="quick-card quick-card-feature">
@@ -100,7 +103,7 @@ http://192.168.0.110:47832/</pre>
         <article class="quick-card">
           <span>03</span>
           <h3 data-i18n="quick.step3Title">Operate Windows from Mac</h3>
-          <p data-i18n="quick.step3Body">Keep the Windows PowerShell agent open. Back on Mac, use the web console, CLI, or AI tools to run real Windows work.</p>
+          <p data-i18n="quick.step3Body">Keep the Windows PowerShell agent open. Back on Mac, use /console to see agents, messages, screenshots, jobs, logs, and command output.</p>
           <pre>npm run status
 npm run run -- "hostname; whoami"
 npm run screenshot</pre>

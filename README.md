@@ -27,19 +27,32 @@ On the Mac, start WinBridge AI:
 npm start
 ```
 
-The Mac terminal prints one or more pairing URLs, for example:
+The Mac terminal prints the Mac control console URL and one or more Windows
+pairing URLs, for example:
 
 ```text
+http://127.0.0.1:47832/console
 http://192.168.0.110:47832/
 ```
+
+On the Mac, open the control console:
+
+```text
+http://127.0.0.1:47832/console
+```
+
+The console is where you can see connected LAN agents, screenshots, messages,
+jobs, uploaded logs, and command output. You can also send a message to the
+Windows page, run PowerShell, request screenshots, and launch task templates.
 
 On the Windows computer:
 
 1. Open that printed URL in a Windows browser.
-2. Find the **LAN Agent** section.
+2. The first visible task is **Copy and run this Agent command**.
 3. Click **Copy Agent Command**.
 4. Paste it into Windows PowerShell and run it.
 5. Keep that PowerShell window open while the Mac controls Windows.
+6. Use **Send a message to Mac** if you need to report something from Windows.
 
 That page also provides optional commands for:
 
@@ -47,8 +60,8 @@ That page also provides optional commands for:
 - optionally bootstrapping OpenSSH Server;
 - optionally installing a Windows build environment.
 
-Once the Windows agent says it is connected, return to the Mac. Use the web
-console that is already open in the browser, or use the CLI:
+Once the Windows agent says it is connected, return to the Mac console or use
+the CLI:
 
 ```bash
 npm run status
@@ -59,7 +72,7 @@ npm run screenshot
 In other words, the normal flow is still:
 
 ```text
-Mac starts server -> Windows browser opens Mac URL -> Windows copies/runs agent command -> Mac controls Windows
+Mac starts server -> Mac opens /console -> Windows opens pairing URL -> Windows copies/runs agent command -> Mac controls Windows
 ```
 
 ## Runtime Data
@@ -70,6 +83,7 @@ By default, local runtime state stays inside this repository:
 - optional pairing token: `.state/pairing-token`
 - generated SSH key: `.state/ssh/winbridge_windows_ed25519`
 - screenshots: `.state/screenshots/`
+- messages, jobs, agents, devices, and logs: `.state/state.json`
 - files served to Windows: `artifacts/`
 
 Drop an installer into `artifacts/`, then use **Install Latest Artifact** from
