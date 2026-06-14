@@ -801,6 +801,7 @@ function renderPage(req) {
     code, pre, textarea { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
     pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #10141c; color: #edf3ff; border-radius: 8px; padding: 14px; }
     textarea { width: 100%; border: 1px solid #b7c1d1; border-radius: 8px; padding: 10px; background: transparent; color: inherit; }
+    textarea.command-box { min-height: 148px; margin-top: 14px; background: #10141c; color: #edf3ff; border-color: #10141c; resize: vertical; }
     button { border: 1px solid #b7c1d1; background: var(--surface); color: var(--text); border-radius: 6px; padding: 9px 12px; cursor: pointer; margin: 0 8px 8px 0; font: inherit; }
     button.primary { border-color: var(--primary); background: var(--primary); color: var(--primary-text); font-weight: 800; }
     button.copy-main { min-height: 56px; padding: 0 22px; font-size: 17px; }
@@ -864,7 +865,7 @@ function renderPage(req) {
         </div>
         <button class="primary copy-main" onclick="copyText('agent', this)">Copy Agent Command</button>
       </div>
-      <pre id="agent">${htmlEscape(agent)}</pre>
+      <textarea id="agent" class="command-box" readonly spellcheck="false" aria-label="Windows LAN Agent command">${htmlEscape(agent)}</textarea>
       <div class="copy-row">
         <button onclick="copyText('agent', this)">Copy again</button>
         <span id="agent-copy-status" class="copy-status" aria-live="polite"></span>
@@ -897,12 +898,12 @@ function renderPage(req) {
       <div class="secondary-actions">
         <div>
           <h3>Optional SSH Bootstrap</h3>
-          <pre id="bootstrap">${htmlEscape(bootstrap)}</pre>
+          <textarea id="bootstrap" class="command-box" readonly spellcheck="false" aria-label="Optional SSH Bootstrap command">${htmlEscape(bootstrap)}</textarea>
           <button onclick="copyText('bootstrap', this)">Copy SSH Bootstrap</button>
         </div>
         <div>
           <h3>Optional Build Environment</h3>
-          <pre id="install">${htmlEscape(install)}</pre>
+          <textarea id="install" class="command-box" readonly spellcheck="false" aria-label="Optional Build Environment command">${htmlEscape(install)}</textarea>
           <button onclick="copyText('install', this)">Copy Installer Command</button>
         </div>
       </div>
@@ -960,11 +961,39 @@ function renderPage(req) {
         status.textContent = '';
       }, 2400);
     }
+    function commandText(id) {
+      const element = document.getElementById(id);
+      return element.value !== undefined ? element.value : element.textContent;
+    }
+    function selectCommand(id) {
+      const element = document.getElementById(id);
+      if (!element) return;
+      if (typeof element.focus === 'function') element.focus();
+      if (typeof element.select === 'function') {
+        element.select();
+        return;
+      }
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    function setButtonCopied(button) {
+      const original = button ? button.textContent : '';
+      if (!button) return;
+      button.textContent = 'Copied';
+      window.setTimeout(() => {
+        button.textContent = original;
+      }, 1400);
+    }
     async function copyText(id, button) {
-      const text = document.getElementById(id).textContent;
+      const text = commandText(id);
       try {
+        let copied = false;
         if (navigator.clipboard && window.isSecureContext) {
           await navigator.clipboard.writeText(text);
+          copied = true;
         } else {
           const textarea = document.createElement('textarea');
           textarea.value = text;
@@ -973,20 +1002,19 @@ function renderPage(req) {
           textarea.style.top = '-1000px';
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          copied = document.execCommand('copy');
           textarea.remove();
         }
-        const original = button ? button.textContent : '';
-        if (button) {
-          button.textContent = 'Copied';
-          window.setTimeout(() => {
-            button.textContent = original;
-          }, 1400);
+        if (!copied) {
+          selectCommand(id);
+          showCopyStatus(id, 'Copy was blocked by the browser. Press Ctrl+C to copy the selected command.');
+          return;
         }
+        setButtonCopied(button);
         showCopyStatus(id, 'Copied. Paste it into Windows PowerShell and press Enter.');
       } catch (error) {
-        showCopyStatus(id, 'Copy failed. Select the command text and copy it manually.');
-        throw error;
+        selectCommand(id);
+        showCopyStatus(id, 'Copy was blocked by the browser. Press Ctrl+C to copy the selected command.');
       }
     }
     async function api(path, options = {}) {
