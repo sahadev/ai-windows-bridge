@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WinBridge AI</title>
-  <meta name="description" content="Control Windows from your Mac-side AI with a local-first bridge." />
+  <meta name="description" content="Operate Windows from your Mac-side AI with a local-first bridge." />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -27,12 +27,12 @@
   <main id="top">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow" data-i18n="hero.eyebrow">Mac control plane. Windows execution surface.</p>
-        <h1 data-i18n="hero.title">Control Windows from your Mac-side AI.</h1>
+        <p class="eyebrow" data-i18n="hero.eyebrow">Mac control plane. Windows operation layer.</p>
+        <h1 data-i18n="hero.title">Operate Windows from your Mac-side AI.</h1>
         <p class="lede" data-i18n="hero.lede">
-          WinBridge AI connects a Windows PC to your Mac so agents can run commands,
-          capture screenshots, install artifacts, inspect logs, and drive verification
-          without installing an AI environment on Windows.
+          WinBridge AI gives agents on your Mac a real execution surface on Windows:
+          commands, scripts, files, processes, screenshots, logs, installers,
+          diagnostics, and any workflow the connected Windows session can automate.
         </p>
         <div class="hero-actions" id="start">
           <code>npm start</code>
@@ -48,7 +48,7 @@
         <div class="console-grid">
           <div>
             <small data-i18n="console.agentLabel">paired agent</small>
-            <b>DESKTOP-7Q9 / builder</b>
+            <b>DESKTOP-7Q9 / operator</b>
           </div>
           <div>
             <small data-i18n="console.lastSeenLabel">last seen</small>
@@ -59,21 +59,21 @@
             <b>3</b>
           </div>
         </div>
-        <pre><span>$</span> winbridge run "pnpm build; cargo test"
-queued job 20260613-bridge-01
+        <pre><span>$</span> winbridge run "Get-Process | Select -First 5"
+queued job 20260613-ops-01
 
 <span>$</span> winbridge screenshot
 captured winbridge-screenshot-20260613.png
 
-<span>$</span> winbridge install-artifact
-installing latest NSIS package...</pre>
+<span>$</span> winbridge run "Start-Process notepad"
+launched Windows process...</pre>
       </div>
     </section>
 
     <section class="band" id="how">
       <div class="section-heading">
         <p class="eyebrow" data-i18n="how.eyebrow">How it works</p>
-        <h2 data-i18n="how.title">One bridge, two machines, no Windows-side AI setup.</h2>
+        <h2 data-i18n="how.title">One bridge, two machines, a full Windows operation surface.</h2>
       </div>
       <div class="steps">
         <article>
@@ -89,26 +89,27 @@ installing latest NSIS package...</pre>
         <article>
           <span>03</span>
           <h3 data-i18n="how.step3Title">Let AI operate</h3>
-          <p data-i18n="how.step3Body">Use the web console, CLI, and future MCP tools to run jobs, collect logs, inspect screenshots, and install builds.</p>
+          <p data-i18n="how.step3Body">Use the web console, CLI, and future MCP tools to operate Windows through commands, files, processes, logs, screenshots, and task templates.</p>
         </article>
       </div>
     </section>
 
     <section class="capabilities">
       <div>
-        <h2 data-i18n="capabilities.title">Built for real Windows work.</h2>
+        <h2 data-i18n="capabilities.title">Not just builds. Operate the machine.</h2>
         <p data-i18n="capabilities.body">
-          The first release focuses on the operations AI agents need when macOS is
-          the thinking environment and Windows is the execution target.
+          Builds and installers are just examples. The product direction is a
+          general Windows control surface for whatever the connected user
+          permissions and automation tools allow.
         </p>
       </div>
       <ul>
-        <li data-i18n="capabilities.item1">PowerShell command queueing</li>
-        <li data-i18n="capabilities.item2">Progress logs and exit codes</li>
-        <li data-i18n="capabilities.item3">Screenshot capture</li>
-        <li data-i18n="capabilities.item4">Artifact serving and installer execution</li>
-        <li data-i18n="capabilities.item5">Optional OpenSSH bootstrap</li>
-        <li data-i18n="capabilities.item6">CLI-first automation surface</li>
+        <li data-i18n="capabilities.item1">Run commands and scripts</li>
+        <li data-i18n="capabilities.item2">Inspect files, env, logs, and processes</li>
+        <li data-i18n="capabilities.item3">Capture screenshots for visual feedback</li>
+        <li data-i18n="capabilities.item4">Move files and operate artifacts</li>
+        <li data-i18n="capabilities.item5">Launch apps, installers, tests, and tools</li>
+        <li data-i18n="capabilities.item6">Expose the surface to AI agents</li>
       </ul>
     </section>
 

@@ -2,19 +2,22 @@
 
 [English](README.md) | [中文](README_CN.md)
 
-Control a Windows computer from a Mac-side AI.
+Operate a Windows computer from a Mac-side AI.
 
-WinBridge AI is a local-first bridge for pairing with Windows machines, running
-PowerShell jobs, collecting logs, serving artifacts, installing builds, and
-capturing screenshots. Windows does not need an AI runtime or development setup
-up front. Start the bridge on the Mac, run the generated one-line command on
-Windows, then operate the machine from the Mac control plane.
+WinBridge AI is a local-first operation layer for controlling Windows machines
+from a Mac. It gives a Mac-side AI a practical execution surface on Windows:
+run commands and scripts, inspect the environment, move files, launch processes,
+install software, capture screenshots, collect logs, and close the loop through
+visual or command output. Windows does not need an AI runtime or development
+setup up front. Start the bridge on the Mac, run the generated one-line command
+on Windows, then operate the machine from the Mac control plane.
 
 ## Status
 
-This repository is the extracted product seed from GitMemo's Windows build
-helper. The current version is useful for LAN-based development and verification.
-It is not yet a hardened remote-access product.
+This repository is the extracted product seed from GitMemo's Windows control and
+build helper. The current version is useful for trusted-LAN operation,
+development, debugging, build, QA, and verification workflows. It is not yet a
+hardened remote-access product.
 
 ## Quick Start
 
@@ -89,14 +92,26 @@ npm run install-artifact
 
 ## Product Shape
 
-WinBridge AI is meant to become a general Mac-to-Windows AI operation layer:
+WinBridge AI is meant to become a general Mac-to-Windows AI operation layer. The
+core idea is broader than build automation: once a Windows machine is connected,
+the Mac-side AI should be able to do anything that the current Windows user,
+PowerShell/scripts, files, processes, installed tools, and screen feedback allow.
+
+Examples:
 
 - execute Windows commands from AI tools;
-- inspect environment and logs;
-- capture screenshots for visual verification;
-- upload and install artifacts;
-- run build or test templates;
+- inspect system state, environment variables, files, processes, and logs;
+- upload, download, create, edit, and delete files when permitted;
+- launch apps, installers, tests, scripts, and diagnostic tools;
+- capture screenshots so the AI can reason about visible Windows state;
+- install software or artifacts as one use case, not the whole product;
+- run build, QA, reproduction, repair, and operations templates;
 - eventually expose MCP tools for Codex, Claude, Cursor, and other agents.
+
+The boundary is the Windows permissions and automation surface available to the
+connected agent. WinBridge AI should not be described as a single-purpose build
+or installer tool; build and installation are just examples of operating
+Windows from the Mac.
 
 ## Security Model
 

@@ -4,18 +4,19 @@
 
 通过 Mac 侧 AI 操作一台 Windows 电脑。
 
-WinBridge AI 是一个本地优先的 Mac 到 Windows 控制桥。它可以配对 Windows
-机器、执行 PowerShell 任务、收集日志、分发安装包、安装构建产物，并捕获
-Windows 截图。Windows 端不需要预先安装 AI 运行环境，也不需要先配置完整开发
-环境。你只需要在 Mac 上启动 WinBridge AI，然后在 Windows 浏览器里打开 Mac
-打印出来的配对地址，复制页面里的命令到 PowerShell 运行，之后就可以从 Mac
-控制 Windows。
+WinBridge AI 是一个本地优先的 Mac 到 Windows 操作层。它不是单一的构建或安
+装工具，而是让 Mac 侧 AI 获得一个真实可用的 Windows 执行面：执行命令和脚本、
+检查系统环境、移动文件、启动进程、安装软件、捕获截图、收集日志，并通过命令
+输出或屏幕状态形成反馈闭环。Windows 端不需要预先安装 AI 运行环境，也不需要
+先配置完整开发环境。你只需要在 Mac 上启动 WinBridge AI，然后在 Windows 浏览
+器里打开 Mac 打印出来的配对地址，复制页面里的命令到 PowerShell 运行，之后就
+可以从 Mac 控制 Windows。
 
 ## 当前状态
 
-这个仓库是从 GitMemo 的 Windows 构建辅助工具中抽出来的独立产品种子版本。
-当前版本适合局域网内开发、构建、验证和调试使用，还不是面向公网远程控制的
-完整安全产品。
+这个仓库是从 GitMemo 的 Windows 控制和构建辅助工具中抽出来的独立产品种子版
+本。当前版本适合可信局域网内的操作、开发、调试、构建、QA 和验证流程，还不
+是面向公网远程控制的完整安全产品。
 
 ## 快速开始
 
@@ -90,14 +91,25 @@ npm run install-artifact
 
 ## 产品方向
 
-WinBridge AI 的目标是成为一个通用的 Mac 到 Windows AI 操作层：
+WinBridge AI 的目标是成为一个通用的 Mac 到 Windows AI 操作层。核心定位不
+是“构建自动化”，而是：一旦 Windows 机器建立连接，Mac 侧 AI 就应该能做当前
+Windows 用户权限、PowerShell/脚本、文件、进程、已安装工具和屏幕反馈所允许
+的事情。
+
+典型能力包括：
 
 - 让 AI 工具执行 Windows 命令；
-- 检查 Windows 环境和日志；
-- 捕获截图用于视觉验证；
-- 上传、分发、安装构建产物；
-- 运行构建、测试、验证模板；
+- 检查系统状态、环境变量、文件、进程和日志；
+- 在权限允许时上传、下载、创建、编辑、删除文件；
+- 启动应用、安装器、测试、脚本和诊断工具；
+- 捕获截图，让 AI 理解 Windows 桌面的可见状态；
+- 安装软件或构建产物，但这只是其中一个使用场景；
+- 运行构建、QA、问题复现、修复和运维模板；
 - 后续通过 MCP 暴露给 Codex、Claude、Cursor 等 Agent。
+
+它的边界取决于连接后的 Windows Agent 拥有的权限和可自动化能力。WinBridge
+AI 不应该被描述成单一用途的构建或安装工具；构建和安装只是“从 Mac 操作
+Windows”的具体示例。
 
 ## 安全模型
 
